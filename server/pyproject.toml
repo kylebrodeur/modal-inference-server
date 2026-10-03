@@ -1,0 +1,47 @@
+[project]
+name = "modal-inference-server"
+version = "0.1.0"
+description = "Generic OpenAI-compatible GPU inference service on Modal"
+
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "fastapi>=0.133,<0.137",
+    "httpx>=0.27,<1",
+    "modal>=1.5,<2",
+    "pyyaml>=6.0.3",
+]
+
+[dependency-groups]
+dev = [
+    "basedpyright>=1.40.1",
+    "pip-audit>=2.10.1",
+    "pytest>=9.0.3",
+    "pytest-xdist>=3.8.0",
+    "ruff>=0.16.9",
+    "xenon>=0.9.3",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+only-include = ["app.py", "config.py", "llama_router.py", "modal_service.py"]
+
+[tool.uv]
+package = true
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "SIM", "RUF"]
+
+[tool.basedpyright]
+typeCheckingMode = "standard"
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-q"
+testpaths = ["tests"]
