@@ -2,7 +2,7 @@
 
 The app is a thin vLLM runner: operators choose an enabled alias, bootstrap its
 pinned weights into a shared Volume (scoped per alias), and deploy exactly one
-profile per App instance. Pi/OMP consume it as an OpenAI-compatible endpoint.
+profile per App instance. Clients consume it as an OpenAI-compatible endpoint.
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ from typing import ClassVar
 import modal
 from fastapi import Request
 
-import mci_catalog as _cat
+import modal_inference_catalog as _cat
 
 _runtime = _cat._runtime
 _load_profile = _cat._load_profile
@@ -55,7 +55,7 @@ MAX_CONTAINERS = int(os.getenv("MAX_CONTAINERS", "1"))
 MIN_CONTAINERS = int(os.getenv("MIN_CONTAINERS", "0"))
 SCALEDOWN_WINDOW = int(os.getenv("SCALEDOWN_WINDOW", "300"))
 DEPLOYED_PROFILE = os.getenv("MODEL_PROFILE", "").strip()
-PROXY_AUTH_ENFORCED = os.getenv("MCI_ENFORCE_PROXY_AUTH", "0") == "1"
+PROXY_AUTH_ENFORCED = os.getenv("MODAL_INFERENCE_ENFORCE_PROXY_AUTH", "0") == "1"
 # Multi-container knobs. max_inputs is the per-container input budget Modal's
 # router respects before queueing or (when max_containers > 1) scaling out;
 # keep headroom over the llama slot count for health/metrics probes.
@@ -64,8 +64,8 @@ PROXY_AUTH_ENFORCED = os.getenv("MCI_ENFORCE_PROXY_AUTH", "0") == "1"
 MAX_INPUTS_PER_CONTAINER = int(os.getenv("MAX_INPUTS_PER_CONTAINER", str(MAX_NUM_SEQS)))
 _TARGET_INPUTS = os.getenv("TARGET_INPUTS_PER_CONTAINER", "").strip()
 TARGET_INPUTS_PER_CONTAINER = int(_TARGET_INPUTS) if _TARGET_INPUTS.isdigit() else None
-# Parked-request wait before a clean 429. Kept below Pi's ~300s idle timeout
-# (pi-subagents DEFAULT_HTTP_IDLE_TIMEOUT_MS = 300000) so a client that cannot
+ # Parked-request wait before a clean 429. Kept below typical client idle timeouts
+ # so a client that cannot
 # get a slot receives a retryable 429 while still connected, instead of a
 # silent connection kill that surfaces as "Request timed out."
 GATE_WAIT_SECONDS = float(os.getenv("GATE_WAIT_SECONDS", "240"))
@@ -308,7 +308,7 @@ def _log_llama_flags() -> None:
 def _register_gpu_container() -> None:
     """Append this container's task id to a boot-time registry on the usage Volume.
 
-    `mci shutdown` reads it to know which live containers are GPU workers
+    `inference shutdown` reads it to know which live containers are GPU workers
     (the ledger only records on requests, so idle containers are invisible).
     """
     path = Path(USAGE_DIR) / "gpu-containers.jsonl"
@@ -359,9 +359,9 @@ def _write_serving_state(ok: bool, model_loaded: bool, detail: str = "") -> None
         # /slots?model=<name> directly (see below), so only the Ollama path
         # (which hides slots entirely) parses the tee.
         with contextlib.suppress(Exception):
-            import mci_slots
+            import modal_inference_slots
 
-            state["slots"] = mci_slots.summarize(_read_llama_log_tail())
+            state["slots"] = modal_inference_slots.summarize(_read_llama_log_tail())
     if ok and model_loaded and _RESOLVED is not None and str(_RESOLVED["runtime"]) == "llama":
         # llama-server's own view: one entry per slot with its live phase and
         # decode rate, read straight from the engine instead of a log tee.
@@ -462,7 +462,7 @@ def _usage_from_stream(raw: bytes) -> dict[str, int]:
 
 
 MODULE_DIR = Path(__file__).parent
-_RUNTIME_MODULES = ("mci_catalog.py", "mci_cost_model.py", "mci_dashboard.py", "mci_slots.py", "llama_router.py")
+ _RUNTIME_MODULES = ("modal_inference_catalog.py", "modal_inference_cost_model.py", "modal_inference_dashboard.py", "modal_inference_slots.py", "llama_router.py")
 
 
 def _bake_modules(image: modal.Image, container_dir: str = "/root") -> modal.Image:
@@ -915,7 +915,7 @@ def _warm_members(preload: list[str], timeout: int) -> None:
 
     llama-server captures compute graphs lazily on the first request of each
     batch size, costing ~60-100s inside that request (measured: a 16K-token
-    request took 82s cold vs 6.8s warm). Pi's ~120s client timeout then kills
+    request took 82s cold vs 6.8s warm). Typical client timeouts then kill
     the "first" request of every fresh boot, which looked like an outage.
 
     Routed by runtime: Ollama takes /api/generate, llama-server takes the
@@ -1280,7 +1280,7 @@ class VLLMServer:
     def ready(self) -> str:
         """Lifecycle barrier: Modal queues this call until @modal.enter() finished.
 
-        Returns once VLLMServer.start() confirmed /health, so `mci warm` can
+        Returns once VLLMServer.start() confirmed /health, so `inference warm` can
         block through container startup without blind HTTP retries.
         """
         _write_serving_state(True, True)
@@ -1314,7 +1314,7 @@ class VLLMServer:
         # kills in-flight decodes ("Server has lost track of input" 500s,
         # observed 2026-10-01 at 6 concurrent / 4 slots / 160K-token prompts).
         # Gate POST /chat/completions at the seam: excess waits briefly, then
-        # gets a clean 429 (Pi retries 429s; it does not retry 500s cleanly).
+        # gets a clean 429 (most clients retry 429s; they do not retry 500s cleanly).
         gate_wait_seconds = GATE_WAIT_SECONDS
         # Per-alias gates: a serve group co-hosts several models, and a request
         # for an idle one must not queue behind a saturated sibling. Capacity is
@@ -1358,12 +1358,12 @@ class VLLMServer:
         _ollama_runtime = _RESOLVED is not None and str(_RESOLVED["runtime"]) == "ollama"
 
         def _flatten_content(content: object) -> str:
-            """OpenAI content parts (Pi always sends a list) -> a plain string.
+            """OpenAI content parts (some clients send a list) -> a plain string.
 
             Ollama's native /api/chat rejects array content with
             `json: cannot unmarshal array into Go struct field
             .ChatRequest.messages.content of type string` (reproduced
-            2026-10-02 against real Pi payloads), so the translation must
+            2026-10-02 against real payloads), so the translation must
             flatten before forwarding. Images are dropped (gemma text-only).
             """
             if isinstance(content, str):
@@ -1381,7 +1381,7 @@ class VLLMServer:
         def _to_native_chat(payload: dict[str, object]) -> dict[str, object]:
             """OpenAI chat payload -> Ollama /api/chat payload (think gating).
 
-            Carries the full conversational shape Pi actually sends: flattened
+            Carries the full conversational shape sent by clients: flattened
             content, assistant tool_calls (arguments string -> object) and tool
             results (tool_name + flattened content), plus the request's tools
             array. Without these the native path silently degrades multi-step
@@ -1432,7 +1432,7 @@ class VLLMServer:
             if payload.get("tool_choice") is not None:
                 native["tool_choice"] = payload["tool_choice"]
             opts: dict[str, object] = {}
-            # Pi sends max_completion_tokens; other clients send max_tokens.
+            # Some clients send max_completion_tokens; other clients send max_tokens.
             limit = payload.get("max_tokens")
             if not isinstance(limit, int):
                 limit = payload.get("max_completion_tokens")
@@ -1574,7 +1574,7 @@ class VLLMServer:
             request_alias = _request_alias(body, _primary_alias())
             # Ask OpenAI-compatible backends to include usage in SSE streams.
             # Without this, streamed requests never get token counts in the ledger
-            # (observed: Pi's streamed requests show dashes in the dashboard).
+            # (observed: streamed requests show dashes in the dashboard).
             if (
                 path.endswith("/chat/completions")
                 and request.method == "POST"
@@ -1591,7 +1591,7 @@ class VLLMServer:
                             forwarded_body = json.dumps(payload).encode()
             # Thinking control: Ollama's OpenAI endpoint ignores reasoning_effort
             # (measured 2026-09-29: low == default on gemma-4-31b; only the native
-            # /api/chat "think": bool actually gates the trace). Pi's per-request
+            # /api/chat "think": bool actually gates the trace). The per-request
             # reasoning_effort="none" is the client-side off switch; translate it
             # in the seam so agents can suppress wasteful traces without knowing
             # the backend is Ollama.
@@ -1683,7 +1683,7 @@ class VLLMServer:
                             # Same early-headers design as the OpenAI path: pad
                             # with SSE comments while ollama withholds headers
                             # through prefill, then adopt the response. Comments
-                            # are skipped by Pi's parsers (only "data:" parsed).
+                            # are skipped by most parsers (only "data:" parsed).
                             if upstream is None:
                                 deadline = time.monotonic() + HEADERS_DEADLINE_SECONDS
                                 while True:
@@ -1693,7 +1693,7 @@ class VLLMServer:
                                     except TimeoutError:
                                         if time.monotonic() > deadline:
                                             raise TimeoutError("upstream headers deadline exceeded") from None
-                                        yield ": mci-keepalive\n\n"
+                                        yield ": inference-keepalive\n\n"
                             upstream.timeout = httpx.Timeout(600.0, read=600.0, write=None, pool=None)
                             queue: asyncio.Queue[bytes | None] = asyncio.Queue()
 
@@ -1714,7 +1714,7 @@ class VLLMServer:
                                     try:
                                         chunk = await asyncio.wait_for(queue.get(), timeout=10)
                                     except TimeoutError:
-                                        yield ": mci-keepalive\n\n"
+                                        yield ": inference-keepalive\n\n"
                                         continue
                                     if chunk is None:
                                         break
@@ -1776,7 +1776,7 @@ class VLLMServer:
                                                 )
                                                 yield "data: [DONE]\n\n"
                             except (asyncio.CancelledError, GeneratorExit) as exc:
-                                # Client disconnected (Pi's own request timeout).
+                                # Client disconnected (client request timeout).
                                 # Acknowledge the cancellation immediately: the
                                 # bounded aclose() in the finally below releases
                                 # the upstream socket. NOTE: Response.close()
@@ -1910,8 +1910,7 @@ class VLLMServer:
                             # Slow path: upstream headers withheld through
                             # prefill. Pad with SSE comments so the client's
                             # idle window never fires, then adopt the response
-                            # the moment it arrives. Both Pi's main parser and
-                            # pi-subagents' reader skip non-"data:" lines.
+                            # the moment it arrives. Most client parsers skip non-"data:" lines.
                             deadline = time.monotonic() + HEADERS_DEADLINE_SECONDS
                             while True:
                                 try:
@@ -1920,7 +1919,7 @@ class VLLMServer:
                                 except TimeoutError:
                                     if time.monotonic() > deadline:
                                         raise TimeoutError("upstream headers deadline exceeded") from None
-                                    yield b": mci-keepalive\n\n"
+                                    yield b": inference-keepalive\n\n"
                         upstream.timeout = httpx.Timeout(600.0, read=600.0, write=None, pool=None)
                         queue: asyncio.Queue[bytes | None] = asyncio.Queue()
 
@@ -1943,7 +1942,7 @@ class VLLMServer:
                                 except TimeoutError:
                                     # Mid-stream stall (e.g. long decode gap) —
                                     # keep the connection visibly alive.
-                                    yield b": mci-keepalive\n\n"
+                                    yield b": inference-keepalive\n\n"
                                     continue
                                 if chunk is None:
                                     break
@@ -2045,7 +2044,7 @@ class VLLMServer:
                         try:
                             chunk = await asyncio.wait_for(queue.get(), timeout=10)
                         except TimeoutError:
-                            yield b": mci-keepalive\n\n"
+                            yield b": inference-keepalive\n\n"
                             continue
                         if chunk is None:
                             break
@@ -2106,10 +2105,10 @@ class VLLMServer:
         return api
 
 
-# Cost model lives in mci_cost_model (pure; volume publish injected at import).
-# Cost model extraction: imported here (not at top) so the injection of
-# the debounced publisher happens after its definition; intentional E402.
-import mci_cost_model as _cm  # noqa: E402
+ # Cost model lives in modal_inference_cost_model (pure; volume publish injected at import).
+ # Cost model extraction: imported here (not at top) so the injection of
+ # the debounced publisher happens after its definition; intentional E402.
+ import modal_inference_cost_model as _cm  # noqa: E402
 
 _cost_compare_payload = _cm._cost_compare_payload
 _archive_billing = _cm._archive_billing
@@ -2141,7 +2140,7 @@ dashboard_image = _bake_modules(
 @modal.asgi_app()
 def dashboard():
     """Deploy root wraps the module-built dashboard; usage volume injected."""
-    from mci_dashboard import build_dashboard_api
+    from modal_inference_dashboard import build_dashboard_api
 
     return build_dashboard_api(usage_volume=usage_volume)
 
@@ -2158,7 +2157,7 @@ def gpu_stop_eager() -> None:
 
     The dashboard Function is CPU-only and is left untouched. Runs as a
     local_entrypoint so the whole thing executes in one clean event loop
-    (`uv run modal run modal_service.py::gpu_stop_eager`); the mci CLI shells
+    (`uv run modal run modal_service.py::gpu_stop_eager`); the inference CLI shells
     out to this instead of doing sync/async gymnastics.
 
     Container enumeration uses the SUPPORTED `modal container` CLI, not the
