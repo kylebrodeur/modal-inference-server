@@ -1,6 +1,6 @@
-"""Private Modal App serving approved model profiles from models.json.
+"""Generic OpenAI-compatible Modal App serving model profiles from models.json.
 
-The app is a thin vLLM runner: operators choose an enabled alias, bootstrap its
+The app is a thin runner: operators choose an enabled alias, bootstrap its
 pinned weights into a shared Volume (scoped per alias), and deploy exactly one
 profile per App instance. Clients consume it as an OpenAI-compatible endpoint.
 """
@@ -22,9 +22,8 @@ from pathlib import Path
 from typing import ClassVar
 
 import modal
-from fastapi import Request
-
 import modal_inference_catalog as _cat
+from fastapi import Request
 
 _runtime = _cat._runtime
 _load_profile = _cat._load_profile
@@ -462,7 +461,13 @@ def _usage_from_stream(raw: bytes) -> dict[str, int]:
 
 
 MODULE_DIR = Path(__file__).parent
- _RUNTIME_MODULES = ("modal_inference_catalog.py", "modal_inference_cost_model.py", "modal_inference_dashboard.py", "modal_inference_slots.py", "llama_router.py")
+_RUNTIME_MODULES = (
+    "modal_inference_catalog.py",
+    "modal_inference_cost_model.py",
+    "modal_inference_dashboard.py",
+    "modal_inference_slots.py",
+    "llama_router.py",
+)
 
 
 def _bake_modules(image: modal.Image, container_dir: str = "/root") -> modal.Image:
@@ -1132,7 +1137,8 @@ def _boot_llama_router(resolved: dict[str, object], preload: list[str], timeout:
         [
             "bash",
             "-c",
-            f"exec {llama_bin} --models-preset {preset_path} --host 0.0.0.0 --port 8000 --no-webui 2>&1 | tee {log_path}",
+            f"exec {llama_bin} --models-preset {preset_path} --host 0.0.0.0 "
+            f"--port 8000 --no-webui 2>&1 | tee {log_path}",
         ],
         # The archive is flat and its libs resolve via rpath relative to the
         # binary; ollama's CUDA dir supplies libcudart/libcublas.
@@ -2105,10 +2111,9 @@ class VLLMServer:
         return api
 
 
- # Cost model lives in modal_inference_cost_model (pure; volume publish injected at import).
- # Cost model extraction: imported here (not at top) so the injection of
- # the debounced publisher happens after its definition; intentional E402.
- import modal_inference_cost_model as _cm  # noqa: E402
+
+
+import modal_inference_cost_model as _cm  # noqa: E402
 
 _cost_compare_payload = _cm._cost_compare_payload
 _archive_billing = _cm._archive_billing
