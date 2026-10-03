@@ -1,0 +1,364 @@
+{
+  "schemaVersion": 1,
+  "models": {
+    "coding-quality-mistral-small-4": {
+      "model": "mistralai/Mistral-Small-4-119B-2603-NVFP4",
+      "revision": "a11f36bebf709121056b1dbcc943d1c6afbe494d",
+      "gpu": "H200",
+      "gpuCount": 2,
+      "maxContextTokens": 65536,
+      "enabled": false,
+      "status": "benchmarking",
+      "license": "apache-2.0",
+      "capabilities": {
+        "streaming": true,
+        "tools": true,
+        "reasoning": true,
+        "jsonMode": true
+      },
+      "vllmArgs": [
+        "--attention-backend",
+        "FLASH_ATTN_MLA",
+        "--tool-call-parser",
+        "mistral",
+        "--enable-auto-tool-choice",
+        "--reasoning-parser",
+        "mistral",
+        "--max-num-batched-tokens",
+        "16384",
+        "--max-num-seqs",
+        "128",
+        "--gpu-memory-utilization",
+        "0.8"
+      ]
+    },
+    "qwen3.8-27b": {
+      "enabled": false,
+      "status": "approved",
+      "gpu": "H200",
+      "gpuCount": 1,
+      "maxContextTokens": 262144,
+      "vllmArgs": [
+        "--reasoning-parser",
+        "qwen3",
+        "--enable-auto-tool-choice",
+        "--tool-call-parser",
+        "qwen3_coder",
+        "--gpu-memory-utilization",
+        "0.85",
+        "--gdn-prefill-backend",
+        "triton"
+      ],
+      "model": "unsloth/Qwen3.8-27B-FP8",
+      "revision": "d51e38f6f2b5877bb91e06ba231e41ffc63bde6f"
+    },
+    "glm-5.3-flash": {
+      "enabled": false,
+      "status": "benchmarking",
+      "gpu": "H200",
+      "gpuCount": 4,
+      "maxContextTokens": 262144,
+      "vllmArgs": [
+        "--tensor-parallel-size",
+        "4",
+        "--kv-cache-dtype",
+        "fp8",
+        "--speculative-config",
+        "{\"method\":\"mtp\",\"num_speculative_tokens\":5}",
+        "--tool-call-parser",
+        "glm47",
+        "--reasoning-parser",
+        "glm47",
+        "--enable-auto-tool-choice"
+      ],
+      "model": "zai-org/GLM-5.3-Flash",
+      "runtime": "vllm",
+      "revision": "eb9eb208eb0d988989d07a6a12d0fdeb5f52574a",
+      "activeTuning": "baseline",
+      "tuning": {
+        "baseline": {
+          "contextTokens": 262144,
+          "numParallel": 8,
+          "batch": 4096,
+          "ubatch": 4096,
+          "kvCacheType": "fp8",
+          "cacheReuse": true
+        }
+      },
+      "note": "vLLM lane needs the pinned NVIDIA image (Glm5Next landed in vLLM main, not 0.20). llama.cpp lane is now viable: GLM5_NEXT added 2026-09-30 (PR #27773), pinned build b11349 (2026-10-02) has it. Weights were purged 2026-09-28; re-bootstrap ~186 GiB (UD-Q4_K_XL, fits H200x2) or ~190 GiB (nvidia NVFP4, needs Blackwell)."
+    },
+    "kimi-k2.7-code": {
+      "enabled": false,
+      "status": "benchmarking",
+      "gpu": "H200",
+      "gpuCount": 4,
+      "maxContextTokens": 131072,
+      "vllmArgs": [],
+      "model": "hf.co/unsloth/Kimi-K2.7-Code-GGUF:UD-Q3_K_XL",
+      "runtime": "ollama",
+      "revision": "3c1dff0e89cf7c47b631a81b989810e0028a1df601a7137e47970534ec64605b",
+      "activeTuning": "baseline",
+      "tuning": {
+        "baseline": {
+          "contextTokens": 131072,
+          "numParallel": 2,
+          "batch": 2048,
+          "ubatch": 2048,
+          "kvCacheType": "q8_0",
+          "cacheReuse": true
+        },
+        "long-context": {
+          "contextTokens": 262144,
+          "numParallel": 1,
+          "batch": 2048,
+          "ubatch": 2048,
+          "kvCacheType": "q8_0",
+          "cacheReuse": true
+        }
+      }
+    },
+    "hemmingway-1": {
+      "enabled": true,
+      "status": "approved",
+      "gpu": "H200",
+      "gpuCount": 1,
+      "maxContextTokens": 131072,
+      "vllmArgs": [],
+      "model": "hf.co/bartowski/Altworld_Hemmingway-1-GGUF:Q8_0",
+      "runtime": "ollama",
+      "revision": "286cd61ffee5b9829a8b6e01302aecd456a4cf2d76ccca1f36ce76736dce2277",
+      "activeTuning": "long-context",
+      "tuning": {
+        "baseline": {
+          "contextTokens": 131072,
+          "numParallel": 2,
+          "batch": 2048,
+          "ubatch": 2048,
+          "kvCacheType": "q8_0",
+          "cacheReuse": true
+        },
+        "long-context": {
+          "contextTokens": 262144,
+          "numParallel": 4,
+          "batch": 2048,
+          "ubatch": 2048,
+          "kvCacheType": "q8_0",
+          "cacheReuse": true
+        }
+      }
+    },
+    "gemma-4-31b": {
+      "enabled": true,
+      "status": "approved",
+      "gpu": "H200",
+      "gpuCount": 1,
+      "maxContextTokens": 262144,
+      "vllmArgs": [],
+      "model": "hf.co/unsloth/gemma-4-31b-it-GGUF:UD-Q8_K_XL",
+      "runtime": "ollama",
+      "revision": "4cab581341fd851728c825038e0d0b25b41d7ef6f22e6b69cd55c6bed394bb76",
+      "activeTuning": "baseline",
+      "tuning": {
+        "baseline": {
+          "contextTokens": 262144,
+          "numParallel": 4,
+          "batch": 4096,
+          "ubatch": 4096,
+          "kvCacheType": "q8_0",
+          "cacheReuse": true
+        },
+        "np2-test": {
+          "contextTokens": 262144,
+          "numParallel": 2,
+          "batch": 4096,
+          "ubatch": 4096,
+          "kvCacheType": "q8_0",
+          "cacheReuse": true
+        },
+        "ev-sim0": {
+          "contextTokens": 262144,
+          "numParallel": 4,
+          "batch": 4096,
+          "ubatch": 4096,
+          "kvCacheType": "q8_0",
+          "cacheReuse": true,
+          "slotPromptSimilarity": 0.0
+        },
+        "ev-kvu128": {
+          "contextTokens": 262144,
+          "numParallel": 4,
+          "batch": 4096,
+          "ubatch": 4096,
+          "kvCacheType": "q8_0",
+          "cacheReuse": true,
+          "kvUnifiedPerSlot": 131072
+        },
+        "ev-swa16": {
+          "contextTokens": 262144,
+          "numParallel": 4,
+          "batch": 4096,
+          "ubatch": 4096,
+          "kvCacheType": "q8_0",
+          "cacheReuse": true,
+          "swaCheckpoints": 16
+        },
+        "ev-idleoff": {
+          "contextTokens": 262144,
+          "numParallel": 4,
+          "batch": 4096,
+          "ubatch": 4096,
+          "kvCacheType": "q8_0",
+          "cacheReuse": true,
+          "cacheIdleSlots": false
+        }
+      }
+    },
+    "qwen3-coder-next": {
+      "enabled": true,
+      "status": "approved",
+      "gpu": "H200",
+      "gpuCount": 1,
+      "maxContextTokens": 262144,
+      "vllmArgs": [],
+      "model": "hf.co/unsloth/Qwen3-Coder-Next-GGUF:UD-Q6_K_XL",
+      "runtime": "ollama",
+      "revision": "d4953d576d081a7a73f9cc221ac36fdde4587625c022e4f29765fd1363f2ad15",
+      "activeTuning": "baseline",
+      "tuning": {
+        "baseline": {
+          "contextTokens": 262144,
+          "numParallel": 4,
+          "batch": 2048,
+          "ubatch": 2048,
+          "kvCacheType": "q8_0",
+          "cacheReuse": true
+        }
+      }
+    },
+    "deepseek-v4.1-flash": {
+      "enabled": false,
+      "status": "approved",
+      "gpu": "B200",
+      "gpuCount": 4,
+      "maxContextTokens": 1048576,
+      "runtime": "vllm",
+      "model": "nvidia/DeepSeek-V4.1-Flash-NVFP4",
+      "revision": "3431dde3247c13b5957f682b1e3c6fcae2566079",
+      "vllmImage": "vllm/vllm-openai:deepseekv41-flash-0909-amd64",
+      "vllmArgs": [
+        "--tensor-parallel-size",
+        "4",
+        "--data-parallel-size",
+        "1",
+        "--tokenizer-mode",
+        "deepseek_v41",
+        "--reasoning-parser",
+        "deepseek_v41",
+        "--language-model-only",
+        "--max-model-len",
+        "1048576",
+        "--max-num-seqs",
+        "32",
+        "--max-num-batched-tokens",
+        "8192",
+        "--enable-chunked-prefill",
+        "--no-enable-prefix-caching",
+        "--tool-call-parser",
+        "deepseek_v41",
+        "--enable-auto-tool-choice",
+        "--model-loader-extra-config",
+        "{\"enable_multithread_load\": true, \"num_threads\": 128}"
+      ],
+      "activeTuning": "baseline",
+      "tuning": {
+        "baseline": {
+          "contextTokens": 1048576,
+          "numParallel": 32,
+          "batch": 8192,
+          "ubatch": 8192,
+          "kvCacheType": "fp8",
+          "cacheReuse": false
+        }
+      }
+    }
+  },
+  "serveGroups": {
+    "local-hot": {
+      "gpu": "H200",
+      "gpuCount": 2,
+      "aliases": [
+        "gemma-4-31b",
+        "hemmingway-1"
+      ],
+      "preload": [
+        "gemma-4-31b",
+        "hemmingway-1"
+      ],
+      "activeTuning": "baseline",
+      "tuning": {
+        "contextTokens": 262144,
+        "numParallel": 4,
+        "batch": 4096,
+        "ubatch": 4096,
+        "kvCacheType": "q8_0",
+        "cacheReuse": true
+      }
+    },
+    "llama-ab": {
+      "gpu": "H200",
+      "gpuCount": 1,
+      "aliases": [
+        "gemma-4-31b"
+      ],
+      "preload": [
+        "gemma-4-31b"
+      ],
+      "runtime": "llama",
+      "activeTuning": "baseline",
+      "tuning": {
+        "contextTokens": 262144,
+        "numParallel": 4,
+        "kvCacheType": "q8_0",
+        "cacheReuse": true
+      }
+    },
+    "llama-router": {
+      "gpu": "H200",
+      "gpuCount": 2,
+      "aliases": [
+        "gemma-4-31b",
+        "hemmingway-1"
+      ],
+      "preload": [
+        "gemma-4-31b",
+        "hemmingway-1"
+      ],
+      "runtime": "llama",
+      "activeTuning": "baseline",
+      "tuning": {
+        "contextTokens": 262144,
+        "numParallel": 4,
+        "kvCacheType": "q8_0",
+        "cacheReuse": true
+      }
+    },
+    "ollama-ab": {
+      "gpu": "H200",
+      "gpuCount": 1,
+      "aliases": [
+        "gemma-4-31b"
+      ],
+      "preload": [
+        "gemma-4-31b"
+      ],
+      "runtime": "ollama",
+      "activeTuning": "baseline",
+      "tuning": {
+        "contextTokens": 262144,
+        "numParallel": 4,
+        "kvCacheType": "q8_0",
+        "cacheReuse": true
+      }
+    }
+  }
+}
