@@ -1,0 +1,12 @@
+# modal-inference-server
+
+> OpenAI-compatible LLM inference on Modal. Deployed with `mtk` from a project overlay. Apache-2.0.
+
+## Docs
+
+- [Quickstart](https://github.com/kylebrodeur/modal-inference-server/blob/main/docs/quickstart.md): from a new project to a deployed inference package.
+- [How-to](https://github.com/kylebrodeur/modal-inference-server/blob/main/docs/how-to.md): day-to-day operation.
+
+## Toolkit
+
+- [Modal Toolkit](https://github.com/kylebrodeur/modal-toolkit): the operator CLI (`mtk`) and the full family.

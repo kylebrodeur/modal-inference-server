@@ -1,0 +1,34 @@
+# The lifecycle skills this package ships. mtk reads this manifest from the
+# vendored copy; names compose as mtk-<pkg>-<stage>. applies = the lowest
+# lifecycle link a skill needs (any | configured | deployed).
+[[skill]]
+name = "mtk-inference-init-config"
+path = "skills/mtk-inference-init-config"
+stage = "init-config"
+applies = "any"
+when = "starting a project that serves inference, or writing its overlay"
+summary = "Init, overlay, and first config for an inference project."
+
+[[skill]]
+name = "mtk-inference-setup-hooks"
+path = "skills/mtk-inference-setup-hooks"
+stage = "setup-hooks"
+applies = "any"
+when = "wiring the MODAL_INFERENCE_HOOKS_MODULE observer seam or heartbeat hooks"
+summary = "Register hooks on the inference overlay seam."
+
+[[skill]]
+name = "mtk-inference-build-deploy"
+path = "skills/mtk-inference-build-deploy"
+stage = "build-deploy"
+applies = "any"
+when = "seeding weights, then deploying or upgrading an inference profile"
+summary = "Seed and deploy recipes for inference (seed.json first)."
+
+[[skill]]
+name = "mtk-inference-develop"
+path = "skills/mtk-inference-develop"
+stage = "develop"
+applies = "deployed"
+when = "building on a running inference endpoint: profiles, tuning, OpenAI-compatible calls"
+summary = "Day-2 work against a live inference instance."
