@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "_comment": "Example catalog. Copy/edit for your own deployment. Each entry pins a base model + revision so runtime state is deterministic across boots. 'enabled' means eligible-to-deploy (not necessarily servable: see docs/RUNBOOK.md gate 1 vs gate 2).",
+  "models": {
+    "qwen3.8-27b": {
+      "enabled": true,
+      "status": "approved",
+      "gpu": "H200",
+      "gpuCount": 1,
+      "maxContextTokens": 262144,
+      "model": "unsloth/Qwen3.8-27B-FP8",
+      "revision": "d51e38f6f2b5877bb91e06ba231e41ffc63bde6f",
+      "runtime": "vllm",
+      "vllmArgs": [],
+      "activeTuning": "baseline",
+      "tuning": {
+        "baseline": {
+          "contextTokens": 262144,
+          "numParallel": 4,
+          "batch": 2048,
+          "ubatch": 2048
+        }
+      }
+    },
+    "gemma-4-31b": {
+      "enabled": true,
+      "status": "approved",
+      "gpu": "H200",
+      "gpuCount": 1,
+      "maxContextTokens": 131072,
+      "model": "google/gemma-4-31b-it",
+      "revision": "0000000000000000000000000000000000000000",
+      "runtime": "ollama",
+      "vllmArgs": [],
+      "activeTuning": "baseline",
+      "tuning": {
+        "baseline": {
+          "contextTokens": 131072,
+          "numParallel": 4,
+          "batch": 2048,
+          "ubatch": 2048,
+          "kvCacheType": "q8_0",
+          "cacheReuse": true
+        }
+      }
+    }
+  },
+  "serveGroups": {
+    "local-hot": {
+      "_comment": "Co-resident on one container: boot both, never evict.",
+      "members": ["gemma-4-31b", "qwen3.8-27b"],
+      "gpu": "H200",
+      "gpuCount": 2,
+      "runtime": "ollama",
+      "tuning": { "contextTokens": 262144, "numParallel": 4, "kvCacheType": "q8_0" }
+    }
+  }
+}

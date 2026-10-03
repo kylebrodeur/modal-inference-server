@@ -1,0 +1,67 @@
+{
+  "as_of": "2026-09-29",
+  "sources": {
+    "openai": {"url": "https://developers.openai.com/api/docs/pricing"},
+    "anthropic": {
+      "url": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "notes": "anthropic.com/pricing redirects to consumer-plan pricing without API token rates; the official Claude API pricing page is cited instead."
+    },
+    "google": {
+      "url": "https://ai.google.dev/gemini-api/docs/pricing",
+      "notes": "Antigravity Agent preview has no public per-token rate on the Gemini API pricing page; not represented as a priced row."
+    }
+  },
+  "caveats": "Prices are standard tiers only — batch/flex/fast tiers and long-context uplifts not substituted. Gemini output prices include thinking tokens. Pro-tier prompt-size thresholds noted per row.",
+  "providers": {
+    "openai": {
+      "models": [
+        {"id": "gpt-5.6-sol", "input_usd_per_m": 4.0, "output_usd_per_m": 20.0, "cached_input_usd_per_m": 0.4, "context_tokens": null, "notes": "Standard tier; long-context requests have separate rates."},
+        {"id": "gpt-5.6-terra", "input_usd_per_m": 2.0, "output_usd_per_m": 12.0, "cached_input_usd_per_m": 0.2, "context_tokens": null, "notes": "Standard tier; long-context requests have separate rates."},
+        {"id": "gpt-5.6-luna", "input_usd_per_m": 0.2, "output_usd_per_m": 1.2, "cached_input_usd_per_m": 0.02, "context_tokens": null, "notes": "Standard tier; long-context requests have separate rates."},
+        {"id": "gpt-5.5", "input_usd_per_m": 5.0, "output_usd_per_m": 30.0, "cached_input_usd_per_m": 0.5, "context_tokens": 272000, "notes": "Standard rate below the 272K context-length threshold; long-context rates higher."},
+        {"id": "gpt-5.5-pro", "input_usd_per_m": 30.0, "output_usd_per_m": 180.0, "cached_input_usd_per_m": null, "context_tokens": 272000, "notes": "No cached-input price listed."},
+        {"id": "gpt-5.4", "input_usd_per_m": 2.5, "output_usd_per_m": 15.0, "cached_input_usd_per_m": 0.25, "context_tokens": 272000, "notes": "Standard rate below the 272K threshold; long-context rates higher."},
+        {"id": "gpt-5.4-mini", "input_usd_per_m": 0.75, "output_usd_per_m": 4.5, "cached_input_usd_per_m": 0.075, "context_tokens": null, "notes": "Standard tier."},
+        {"id": "gpt-5.4-nano", "input_usd_per_m": 0.2, "output_usd_per_m": 1.25, "cached_input_usd_per_m": 0.02, "context_tokens": null, "notes": "Standard tier."},
+        {"id": "gpt-5.4-pro", "input_usd_per_m": 30.0, "output_usd_per_m": 180.0, "cached_input_usd_per_m": null, "context_tokens": 272000, "notes": "No cached-input price listed."},
+        {"id": "gpt-5.2", "input_usd_per_m": 1.75, "output_usd_per_m": 14.0, "cached_input_usd_per_m": 0.175, "context_tokens": null, "notes": "Standard tier."},
+        {"id": "gpt-5.2-pro", "input_usd_per_m": 21.0, "output_usd_per_m": 168.0, "cached_input_usd_per_m": null, "context_tokens": null, "notes": "No cached-input price listed."},
+        {"id": "gpt-5.1", "input_usd_per_m": 1.25, "output_usd_per_m": 10.0, "cached_input_usd_per_m": 0.125, "context_tokens": null, "notes": "Standard tier."},
+        {"id": "gpt-5", "input_usd_per_m": 1.25, "output_usd_per_m": 10.0, "cached_input_usd_per_m": 0.125, "context_tokens": 400000, "notes": "Standard tier."},
+        {"id": "gpt-5-mini", "input_usd_per_m": 0.25, "output_usd_per_m": 2.0, "cached_input_usd_per_m": 0.025, "context_tokens": null, "notes": "Standard tier."},
+        {"id": "gpt-5-nano", "input_usd_per_m": 0.05, "output_usd_per_m": 0.4, "cached_input_usd_per_m": 0.005, "context_tokens": null, "notes": "Standard tier."},
+        {"id": "gpt-5-pro", "input_usd_per_m": 15.0, "output_usd_per_m": 120.0, "cached_input_usd_per_m": null, "context_tokens": null, "notes": "No cached-input price listed."},
+        {"id": "gpt-4.1", "input_usd_per_m": 2.0, "output_usd_per_m": 8.0, "cached_input_usd_per_m": 0.5, "context_tokens": 1047576, "notes": "Standard tier."},
+        {"id": "gpt-4.1-mini", "input_usd_per_m": 0.4, "output_usd_per_m": 1.6, "cached_input_usd_per_m": 0.1, "context_tokens": null, "notes": "Standard tier."},
+        {"id": "gpt-4.1-nano", "input_usd_per_m": 0.1, "output_usd_per_m": 0.4, "cached_input_usd_per_m": 0.025, "context_tokens": null, "notes": "Standard tier."},
+        {"id": "o1", "input_usd_per_m": 15.0, "output_usd_per_m": 60.0, "cached_input_usd_per_m": 7.5, "context_tokens": null, "notes": "Standard tier."},
+        {"id": "o1-pro", "input_usd_per_m": 150.0, "output_usd_per_m": 600.0, "cached_input_usd_per_m": null, "context_tokens": null, "notes": "No cached-input price listed."},
+        {"id": "o3-pro", "input_usd_per_m": 20.0, "output_usd_per_m": 80.0, "cached_input_usd_per_m": null, "context_tokens": null, "notes": "No cached-input price listed."},
+        {"id": "o3", "input_usd_per_m": 2.0, "output_usd_per_m": 8.0, "cached_input_usd_per_m": 0.5, "context_tokens": 200000, "notes": "Standard tier."},
+        {"id": "o4-mini", "input_usd_per_m": 1.1, "output_usd_per_m": 4.4, "cached_input_usd_per_m": 0.275, "context_tokens": null, "notes": "Standard tier."},
+        {"id": "o3-mini", "input_usd_per_m": 1.1, "output_usd_per_m": 4.4, "cached_input_usd_per_m": 0.55, "context_tokens": null, "notes": "Standard tier."}
+      ]
+    },
+    "anthropic": {
+      "models": [
+        {"id": "claude-opus-5-5", "input_usd_per_m": 4.0, "output_usd_per_m": 20.0, "cached_input_usd_per_m": 0.2, "context_tokens": 1000000, "notes": "Cache hit/read is 5% of base input."},
+        {"id": "claude-sonnet-5-5", "input_usd_per_m": 2.0, "output_usd_per_m": 10.0, "cached_input_usd_per_m": 0.2, "context_tokens": 1000000, "notes": "Cache hit/read is 10% of base input."},
+        {"id": "claude-haiku-4-5", "input_usd_per_m": 1.0, "output_usd_per_m": 5.0, "cached_input_usd_per_m": 0.1, "context_tokens": 200000, "notes": "Cache hit/read is 10% of base input."}
+      ]
+    },
+    "google": {
+      "models": [
+        {"id": "gemini-3.8-flash", "input_usd_per_m": 0.75, "output_usd_per_m": 3.75, "cached_input_usd_per_m": 0.075, "context_tokens": null, "notes": "Standard paid tier through Dec 31 2026; output includes thinking tokens."},
+        {"id": "gemini-3.7-flash", "input_usd_per_m": 0.75, "output_usd_per_m": 3.75, "cached_input_usd_per_m": 0.075, "context_tokens": null, "notes": "Standard paid tier through Dec 31 2026; output includes thinking tokens."},
+        {"id": "gemini-3.6-flash", "input_usd_per_m": 0.75, "output_usd_per_m": 3.75, "cached_input_usd_per_m": 0.075, "context_tokens": null, "notes": "Standard paid tier through Dec 31 2026; output includes thinking tokens."},
+        {"id": "gemini-3.5-flash", "input_usd_per_m": 1.5, "output_usd_per_m": 9.0, "cached_input_usd_per_m": 0.15, "context_tokens": null, "notes": "Output includes thinking tokens."},
+        {"id": "gemini-3.5-flash-lite", "input_usd_per_m": 0.3, "output_usd_per_m": 2.5, "cached_input_usd_per_m": 0.03, "context_tokens": null, "notes": "Text/image/video price."},
+        {"id": "gemini-3.1-flash-lite", "input_usd_per_m": 0.25, "output_usd_per_m": 1.5, "cached_input_usd_per_m": 0.025, "context_tokens": null, "notes": "Text/image/video price."},
+        {"id": "gemini-3.1-pro-preview", "input_usd_per_m": 2.0, "output_usd_per_m": 12.0, "cached_input_usd_per_m": 0.2, "context_tokens": 200000, "notes": "Above 200K: $4 in / $18 out / $0.40 cached."},
+        {"id": "gemini-2.5-pro", "input_usd_per_m": 1.25, "output_usd_per_m": 10.0, "cached_input_usd_per_m": 0.125, "context_tokens": 200000, "notes": "Above 200K: $2.50 in / $15 out / $0.25 cached."},
+        {"id": "gemini-2.5-flash", "input_usd_per_m": 0.3, "output_usd_per_m": 2.5, "cached_input_usd_per_m": 0.03, "context_tokens": 1000000, "notes": "Output includes thinking tokens."},
+        {"id": "gemini-2.5-flash-lite", "input_usd_per_m": 0.1, "output_usd_per_m": 0.4, "cached_input_usd_per_m": 0.01, "context_tokens": null, "notes": "Output includes thinking tokens."}
+      ]
+    }
+  }
+}
