@@ -1,0 +1,48 @@
+[project]
+name = "modal-inference-server"
+version = "1.4.0"
+description = "OpenAI-compatible GPU inference service on Modal with hot-set routing, slot gating, scale-to-zero"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "fastapi>=0.133,<0.137",
+    "httpx>=0.27,<1",
+    "modal>=1.5,<2",
+    "pydantic>=2.10,<3",
+    "pyyaml>=6.0.3",
+]
+
+[project.scripts]
+modal-inference = "cli:main"
+modal-inference-install = "install_provider:main"
+
+[dependency-groups]
+dev = [
+    "basedpyright>=1.40.1",
+    "pip-audit>=2.10.1",
+    "pytest>=9.0.3",
+    "pytest-xdist>=3.8.0",
+    "ruff>=0.16.9",
+    "xenon>=0.9.3",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+only-include = ["cli.py", "install_provider.py", "server"]
+
+[tool.uv]
+package = true
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.basedpyright]
+typeCheckingMode = "standard"
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-q"
+testpaths = ["server/tests"]
