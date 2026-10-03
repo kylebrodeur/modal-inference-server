@@ -1,0 +1,13 @@
+# Operator commands for `mtk inference`, mounted by the toolkit's command host
+# (modal-toolkit/toolkit/pkg_commands.py). Inert data: the server never reads it.
+#
+# Inference owns the deepest surface (deploy, warm, status, tuning, models,
+# install, stats, pricing, cost) in its own `modal-inference` console script, so
+# the whole group is a passthrough: `mtk inference <anything...>` runs
+# `uv run modal-inference <anything...>` in the checkout, argv preserved verbatim
+# and parsed by the repo's own CLI. No base_url gate: the CLI's own commands gate
+# themselves (and `setup` must stay reachable before a lane exists).
+
+[passthrough]
+summary = "passthrough to the inference repo's own modal-inference CLI"
+argv = ["modal-inference"]
