@@ -240,7 +240,7 @@ button{cursor:pointer}
 def build_dashboard_api(usage_volume=None) -> FastAPI:
     """Construct the dashboard ASGI app (fastapi). Deploy root mounts it."""
     deployed_profile = os.getenv("MODEL_PROFILE", "").strip()
-    app_name = os.getenv("APP_NAME", "modal-coding-inference")
+    app_name = os.getenv("APP_NAME", "modal-inference-server")
     resolved = resolve_serve_target(deployed_profile) if deployed_profile else None
     dashboard_token = os.getenv("MODAL_INFERENCE_DASHBOARD_TOKEN", "").strip()
     cookie_name = "modal_inference_dashboard_session"

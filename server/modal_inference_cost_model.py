@@ -171,7 +171,7 @@ def _serving_hours(events: list[dict[str, object]]) -> set[int]:
 def _serving_cost_usd(events: list[dict[str, object]], hourly_rows: list[dict[str, object]]) -> float:
     """App dollars billed ONLY in hours where real inference traffic flowed (all resources).
 
-    Excludes pre-hemmingway experiment days (no ledger requests) and churn-only
+    Excludes early experiment days (no ledger requests) and churn-only
     hours where nobody actually requested anything.
     """
     hours = _serving_hours(events)

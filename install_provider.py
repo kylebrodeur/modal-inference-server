@@ -9,7 +9,7 @@ file for each harness, then verifies it. Safe to re-run (idempotent upsert).
   uv run python install_provider.py --check    # verify only, write nothing
 
 What it needs:
-  MODAL_BASE_URL     deployed URL, e.g. https://kylebrodeur--modal-inference-server-vllmserver-web.modal.run
+  MODAL_BASE_URL     deployed URL, e.g. https://<workspace>--modal-inference-server-vllmserver-web.modal.run
   MODAL_PROXY_TOKEN  wk-... bearer from the Modal proxy-auth secret
 
 What it does per harness:
@@ -49,7 +49,7 @@ def _service_url() -> str:
 def _pi_agent_dir(explicit: str) -> Path:
     """Resolve the Pi agent dir: explicit flag > $PI_CODING_AGENT_DIR > ~/.pi/agent.
 
-    pi-vault-mind scopes Pi to a vault-local agent dir via PI_CODING_AGENT_DIR
+    Vault Mind scopes Pi to a project-local agent dir via PI_CODING_AGENT_DIR
     (set by vault-pi.sh), so `modal-inference install` must honor that rather than assume the
     global ~/.pi/agent location.
     """

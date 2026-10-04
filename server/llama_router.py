@@ -3,7 +3,7 @@
 Why this exists: `ollama serve` decides `numParallel` per MODEL, not per
 container, and silently clamps architectures on its own blocklist to a single
 slot (server/sched.go). One container therefore cannot serve gemma-4-31b at
-4 slots and hemmingway-1 (qwen35) at 4 slots with different contexts, and the
+4 slots and a qwen35-architecture model at 4 slots with different contexts, and the
 clamp is invisible in `/api/ps`.
 
 `llama-server --models-preset` has no such limit: each preset section carries

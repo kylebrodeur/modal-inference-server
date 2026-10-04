@@ -37,7 +37,7 @@ _tuning_profile = _cat._tuning_profile
 _runtime_tuning_override = _cat._runtime_tuning_override
 _runtime_target_tuning = _cat._runtime_target_tuning
 
-APP_NAME = os.getenv("APP_NAME", "modal-coding-inference")
+APP_NAME = os.getenv("APP_NAME", "modal-inference-server")
 CATALOG_PATH = Path(os.getenv("MODEL_CATALOG_PATH", Path(__file__).with_name("models.json")))
 MODEL_DIR = "/models"
 ENGINE_CACHE_DIR = "/engine-cache"
@@ -127,7 +127,7 @@ class _SlotGates:
     Ollama sizes llama's slot pool by OLLAMA_NUM_PARALLEL, but it decides per
     MODEL, not per container: architectures it cannot parallelize are silently
     forced to a single slot. Observed live on the `local-hot` group — the same
-    container launched gemma-4-31b with `-np 4` and hemmingway-1 (architecture
+    container launched gemma-4-31b with `-np 4` and a second model (architecture
     qwen35) with `-np 1`, after logging `model architecture does not currently
     support parallel requests`. Ollama exposes no API for this, so the gate is
     sized from the `n_slots` line each load writes to the engine log.
@@ -136,7 +136,7 @@ class _SlotGates:
     concurrent requests to a one-slot model: the extras then queue INSIDE
     llama, invisible to the client, which is exactly the silent-wait failure
     the gate exists to prevent. A group must also not share its *queue*:
-    gemma's busy slots should not park a hemmingway request.
+    gemma's busy slots should not park a request for a different model.
     """
 
     def __init__(self, capacities: dict[str, int], wait_seconds: float) -> None:
@@ -662,8 +662,8 @@ def _import_hf_gguf(alias: str, repo: str, quant: str, model_dir: str, env: dict
     `create` copies the shards into the blob store, so the download is removed afterwards.
 
     No `revision=` here on purpose. For an ollama-runtime profile the catalog's
-    `revision` is the OLLAMA MANIFEST DIGEST (verified: gemma 4cab5813 and
-    hemmingway 286cd61f each equal the sha256 of their own manifest), because
+    `revision` is the OLLAMA MANIFEST DIGEST (verified: each alias's value
+    equals the sha256 of its own manifest), because
     that is what `_bootstrap_ollama` compares against and what makes an ollama
     import self-verifying. A manifest digest is NOT an HF revision and does not
     resolve on the Hub, so passing it to snapshot_download breaks bootstrap for
