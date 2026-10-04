@@ -63,3 +63,22 @@ The server is configured via environment variables and `models.json`:
 | `MIN_CONTAINERS` | Minimum GPU containers (set to 0 for scale-to-zero) | `0` |
 | `SCALEDOWN_WINDOW`| Seconds of inactivity before scaling down | `300` |
 | `GATE_WAIT_SECONDS`| Client wait time before returning a 429 | `240` |
+
+## Part of the Modal Ecosystem
+
+This repo is one of three standalone Modal utilities from the same author. Each is extractable and deployable on its own.
+
+- **[modal-embedding-server](https://github.com/kylebrodeur/modal-embedding-server):** GPU-backed embeddings with a monotonic sync protocol for local-first search.
+- **[modal-vision-server](https://github.com/kylebrodeur/modal-vision-server):** Specialized vision classification (BioCLIP-2) with adaptive SAM 2.1 segmentation.
+
+## Examples
+
+See [`examples/`](examples/) for a minimal, stdlib-only client (`chat_example.py`) you can copy directly into your own stack.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for ground rules and workflow.
+
+## License
+
+Apache-2.0 — see [LICENSE](LICENSE).
