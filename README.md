@@ -79,6 +79,12 @@ See [`examples/`](examples/) for a minimal, stdlib-only client (`chat_example.py
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for ground rules and workflow.
 
+---
+
+---
+
+Built by [Kyle Brodeur](https://kylebrodeur.com) · Model-selection deep-dive: [Choose the Right Embedding Model for Your Data](https://kylebrodeur.substack.com/p/choose-embedding-model-for-your-data)
+
 ## License
 
 Apache-2.0 — see [LICENSE](LICENSE).
