@@ -7,6 +7,8 @@ High-performance, GPU-accelerated LLM inference infrastructure deployed on Modal
 [![Runtime](https://img.shields.io/badge/runtime-GPU-orange)](https://modal.com/docs)
 [![Sponsor](https://img.shields.io/badge/Sponsor-GitHub%20Sponsors-pink.svg)](https://github.com/sponsors/kylebrodeur)
 
+> **Operations:** for cold starts, cost control, hot-set semantics, slot gating, GGUF arch gotchas, and troubleshooting, read [docs/RUNBOOK.md](docs/RUNBOOK.md).
+
 ## Architecture Pillars
 
 ### 1. Routing
