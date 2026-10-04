@@ -66,6 +66,35 @@ The server is configured via environment variables and `models.json`:
 | `SCALEDOWN_WINDOW`| Seconds of inactivity before scaling down | `300` |
 | `GATE_WAIT_SECONDS`| Client wait time before returning a 429 | `240` |
 
+## Operator CLI
+
+The repo ships a `modal-inference` CLI (installed with `uv sync` via the `[project.scripts]` entry), which wraps the full operational lifecycle:
+
+```bash
+modal-inference setup                          # one-time: writes ~/.config/modal-inference/config.json
+modal-inference use <alias>                    # switch: deploy if needed, then warm
+modal-inference warm | health | status         # act on the currently deployed target
+modal-inference shutdown                       # scale GPU to zero now (dashboard stays up)
+modal-inference models list|add|update|enable|disable
+modal-inference tuning list|add|activate|compare|flex
+modal-inference stats | pricing | cost compare
+modal-inference doctor                         # full-chain health + drift report
+```
+
+Also: `modal-inference-install` writes the Pi/OMP provider config (`uv run modal-inference-install --check` to verify only).
+
+## Warm-on-Session-Start (Pi/Extras)
+
+The service scales to zero, so the first request of a session pays a cold boot (150–470s, measured). Drop [`extensions/modal-warm.ts`](extensions/modal-warm.ts) into your Pi `<agent-dir>/extensions/` to kick off the warm at session start and hide that wait:
+
+```bash
+cp extensions/modal-warm.ts ~/.pi/agent/extensions/
+# or, for a vault-scoped agent dir:
+cp extensions/modal-warm.ts <vault>/.vault-mind/.pi/agent/extensions/
+```
+
+One probe per process. Skips sessions whose model is not on the provider. Never throws into the session. Distinguishes auth-rejected (check `MODAL_PROXY_TOKEN`) from still-booting, and reports the served hot set on success.
+
 ## Examples
 
 See [`examples/`](examples/) for a minimal, stdlib-only client (`chat_example.py`) you can copy directly into your own stack.

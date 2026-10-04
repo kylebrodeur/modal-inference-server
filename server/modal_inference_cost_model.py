@@ -184,7 +184,7 @@ def _serving_cost_usd(events: list[dict[str, object]], hourly_rows: list[dict[st
 def _cost_compare_payload(events: list[dict[str, object]], billing: dict[str, object]) -> dict[str, object]:
     """Self-host vs public-API comparison from the ledger and baked rate cards.
 
-    Mirrors `mci cost compare`: model share of metered cost from token mix,
+    Mirrors `modal-inference cost compare`: model share of metered cost from token mix,
     per-M self-host $ rates, and each external model's same-mix cost.
     """
     metered = billing.get("metered_month_usd") if isinstance(billing, dict) else None

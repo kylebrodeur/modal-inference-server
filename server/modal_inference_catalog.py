@@ -296,7 +296,7 @@ def _runtime_target_tuning(target: dict[str, object]) -> dict[str, object]:
     """Boot-time tuning overrides for a serve TARGET (alias or group).
 
     A group has no member profile to flex — its tuning IS the container env —
-    so overrides written by `mci tuning flex --alias <group>` (or the
+    so overrides written by `modal-inference tuning flex --alias <group>` (or the
     dashboard) apply straight onto the target's block. Single-alias targets
     flow through `_runtime_tuning_override` so their existing behavior and
     file format are unchanged.

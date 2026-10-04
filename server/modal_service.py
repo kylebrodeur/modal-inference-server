@@ -47,9 +47,9 @@ OLLAMA_LOG_FILE = os.getenv("OLLAMA_LOG_FILE", "/tmp/ollama-serve.log")
 #   srv    load_model: initializing, n_slots = 4, n_ctx_slot = 65536, ...
 _N_SLOTS_RE = re.compile(r"n_slots\s*=\s*(\d+)")
 USAGE_LEDGER_DIR = f"{USAGE_DIR}/events"
-USAGE_VOLUME_NAME = "modal-coding-inference-usage"
+USAGE_VOLUME_NAME = "modal-inference-server-usage"
 VLLM_VERSION = os.getenv("VLLM_VERSION", "0.20.0")
-HF_SECRET_NAME = os.getenv("HF_SECRET_NAME", "modal-coding-inference-huggingface")
+HF_SECRET_NAME = os.getenv("HF_SECRET_NAME", "modal-inference-server-huggingface")
 MAX_NUM_SEQS = int(os.getenv("MAX_NUM_SEQS", "8"))
 MAX_CONTAINERS = int(os.getenv("MAX_CONTAINERS", "1"))
 MIN_CONTAINERS = int(os.getenv("MIN_CONTAINERS", "0"))
@@ -558,13 +558,13 @@ def _serve_image(alias: str) -> modal.image._Image:
 _SERVE_IMAGE = _serve_image(DEPLOYED_PROFILE) if DEPLOYED_PROFILE else None
 app = modal.App(APP_NAME, image=_SERVE_IMAGE, tags={"project": APP_NAME})
 model_volume = modal.Volume.from_name(
-    os.getenv("MODEL_VOLUME_NAME", "modal-coding-inference-models"), create_if_missing=True
+    os.getenv("MODEL_VOLUME_NAME", "modal-inference-server-models"), create_if_missing=True
 )
 engine_volume = modal.Volume.from_name(
-    os.getenv("ENGINE_CACHE_VOLUME_NAME", "modal-coding-inference-engine-cache"), create_if_missing=True
+    os.getenv("ENGINE_CACHE_VOLUME_NAME", "modal-inference-server-engine-cache"), create_if_missing=True
 )
 hf_secret = modal.Secret.from_name(HF_SECRET_NAME)
-dashboard_secret = modal.Secret.from_name("modal-coding-inference-dashboard")
+dashboard_secret = modal.Secret.from_name("modal-inference-server-dashboard")
 usage_volume = modal.Volume.from_name(USAGE_VOLUME_NAME, create_if_missing=True)
 
 

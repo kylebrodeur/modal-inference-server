@@ -106,7 +106,7 @@ modal deploy server/modal_service.py
 
 Ollama profiles pin by **manifest digest** (64 hex). Leave `--revision` off for
 the first bootstrap; it records the digest in the Volume marker, then pin with
-`MCI models` config update.
+Edit `server/models.json` (the catalog) and re-deploy.
 
 ### The GGUF arch-string trap
 

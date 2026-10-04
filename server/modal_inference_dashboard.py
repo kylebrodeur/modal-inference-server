@@ -183,7 +183,7 @@ def _gpu_fleet() -> dict[str, object]:
                 alive_gpus[gpu] = alive_gpus.get(gpu, 0) + int(row["gpu_count"])
             fleet_rows.append(row)
     # Registrations for containers that never wrote a heartbeat file (or whose
-    # state file was already pruned): show them, as stopped, so `mci shutdown`
+    # state file was already pruned): show them, as stopped, so `modal-inference shutdown`
     # style postmortems stay possible from the dashboard alone.
     for cid, reg in registry.items():
         if cid not in seen_cids:
@@ -382,33 +382,33 @@ def build_dashboard_api(usage_volume=None) -> FastAPI:
         expected = f"Bearer {dashboard_token}" if dashboard_token else ""
         return valid_session(request) or (bool(dashboard_token) and hmac.compare_digest(supplied, expected))
 
-    @api.get("/_mci/login")
+    @api.get("/_dashboard/login")
     async def login_page():
         return Response(content=_dashboard_login_html(), media_type="text/html")
 
-    @api.post("/_mci/login")
+    @api.post("/_dashboard/login")
     async def login(request: Request):
         body = parse_qs((await request.body()).decode("utf-8", errors="replace"))
         supplied = body.get("credential", [""])[0]
         if not dashboard_token or not hmac.compare_digest(supplied, dashboard_token):
             return Response(content=_dashboard_login_html(), status_code=401, media_type="text/html")
-        response = RedirectResponse("/_mci", status_code=303)
+        response = RedirectResponse("/_dashboard", status_code=303)
         response.set_cookie(
             cookie_name, session_value(), max_age=session_max_age, httponly=True, secure=True, samesite="lax"
         )
         return response
 
-    @api.get("/_mci/logout")
+    @api.get("/_dashboard/logout")
     async def logout():
-        response = RedirectResponse("/_mci/login", status_code=303)
+        response = RedirectResponse("/_dashboard/login", status_code=303)
         response.delete_cookie(cookie_name)
         return response
 
-    @api.get("/_mci/assets/dashboard.js")
+    @api.get("/_dashboard/assets/dashboard.js")
     async def dashboard_js_asset():
         return Response(content=Path("/root/dashboard/dashboard.js").read_text(), media_type="application/javascript")
 
-    @api.get("/_mci/api/stats")
+    @api.get("/_dashboard/api/stats")
     async def stats(request: Request):
         if not authorized(request):
             return Response(status_code=401, content="unauthorized")
@@ -624,19 +624,19 @@ def build_dashboard_api(usage_volume=None) -> FastAPI:
             "model_profiles": sorted({str(event.get("model", "")) for event in events if event.get("model")}),
         }
 
-    @api.get("/_mci")
+    @api.get("/_dashboard")
     async def dashboard_page(request: Request):
         if not valid_session(request):
-            return RedirectResponse("/_mci/login", status_code=303)
+            return RedirectResponse("/_dashboard/login", status_code=303)
         return Response(content=Path("/root/dashboard/index.html").read_text(), media_type="text/html")
 
-    @api.post("/_mci/api/billing/refresh")
+    @api.post("/_dashboard/api/billing/refresh")
     async def billing_refresh(request: Request):
         if not authorized(request):
             return Response(status_code=401, content="unauthorized")
         return await _billing_snapshot(force=True)
 
-    @api.post("/_mci/api/runtime-tuning")
+    @api.post("/_dashboard/api/runtime-tuning")
     async def runtime_tuning(request: Request):
         """Flex tuning knobs (numParallel, contextTokens) WITHOUT a redeploy.
 
@@ -698,7 +698,7 @@ def build_dashboard_api(usage_volume=None) -> FastAPI:
             "alias": alias,
             "overrides": merged,
             "cleared": not overrides,
-            "note": "takes effect on the next GPU container boot (mci shutdown cycles it)",
+            "note": "takes effect on the next GPU container boot (modal-inference shutdown cycles it)",
         }
 
     return api
