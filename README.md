@@ -2,9 +2,10 @@
 
 High-performance, GPU-accelerated LLM inference infrastructure deployed on Modal. This system provides a production-ready bridge between open-weight model registries and OpenAI-compatible API endpoints.
 
-![License](https://img.shields.io/badge/license-MIT-blue)
-![Modal](https://img.shields.io/badge/platform-Modal-green)
-![Runtime](https://img.shields.io/badge/runtime-GPU-orange)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Modal](https://img.shields.io/badge/platform-Modal-green)](https://modal.com)
+[![Runtime](https://img.shields.io/badge/runtime-GPU-orange)](https://modal.com/docs)
+[![Sponsor](https://img.shields.io/badge/Sponsor-GitHub%20Sponsors-pink.svg)](https://github.com/sponsors/kylebrodeur)
 
 ## Architecture Pillars
 
