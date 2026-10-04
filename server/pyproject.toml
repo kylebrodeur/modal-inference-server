@@ -5,7 +5,7 @@ description = "Generic OpenAI-compatible GPU inference service on Modal"
 
 requires-python = ">=3.11,<3.13"
 dependencies = [
-    "fastapi>=0.133,<0.137",
+    "fastapi>=0.133,<0.143",
     "httpx>=0.27,<1",
     "modal>=1.5,<2",
     "pyyaml>=6.0.3",
