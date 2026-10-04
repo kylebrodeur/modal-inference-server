@@ -22,8 +22,9 @@ from pathlib import Path
 from typing import ClassVar
 
 import modal
-import modal_inference_catalog as _cat
 from fastapi import Request
+
+import modal_inference_catalog as _cat
 
 _runtime = _cat._runtime
 _load_profile = _cat._load_profile
