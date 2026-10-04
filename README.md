@@ -64,13 +64,6 @@ The server is configured via environment variables and `models.json`:
 | `SCALEDOWN_WINDOW`| Seconds of inactivity before scaling down | `300` |
 | `GATE_WAIT_SECONDS`| Client wait time before returning a 429 | `240` |
 
-## Part of the Modal Ecosystem
-
-This repo is one of three standalone Modal utilities from the same author. Each is extractable and deployable on its own.
-
-- **[modal-embedding-server](https://github.com/kylebrodeur/modal-embedding-server):** GPU-backed embeddings with a monotonic sync protocol for local-first search.
-- **[modal-vision-server](https://github.com/kylebrodeur/modal-vision-server):** Specialized vision classification (BioCLIP-2) with adaptive SAM 2.1 segmentation.
-
 ## Examples
 
 See [`examples/`](examples/) for a minimal, stdlib-only client (`chat_example.py`) you can copy directly into your own stack.
@@ -84,6 +77,33 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for ground rules and workflow.
 ---
 
 Built by [Kyle Brodeur](https://kylebrodeur.com) · Model-selection deep-dive: [Choose the Right Embedding Model for Your Data](https://kylebrodeur.substack.com/p/choose-embedding-model-for-your-data)
+
+## Part of the Modal Toolkit
+
+Four standalone Modal utilities from the same author, each extractable and deployable on its own.
+
+- **[modal-embedding-server](https://github.com/kylebrodeur/modal-embedding-server):** GPU-backed embeddings with a monotonic sync protocol for local-first search.
+- **[modal-vision-server](https://github.com/kylebrodeur/modal-vision-server):** Specialized vision classification (BioCLIP-2) with adaptive SAM 2.1 segmentation.
+- **[modal-finetune-server](https://github.com/kylebrodeur/modal-finetune-server):** Profile-driven LoRA fine-tune and GGUF pipeline with an honest eval gate.
+
+## Ecosystem Flowchart
+
+```mermaid
+graph LR
+    subgraph Your Data
+        Local[Local Vault / Corpus]
+    end
+    subgraph Modal GPU Stack
+        Embed[modal-embedding-server]
+        Infer[modal-inference-server]
+        Vision[modal-vision-server]
+        Finetune[modal-finetune-server]
+    end
+    Local -- text / images / prompts --> Embed & Infer & Vision
+    Embed -- vectors --> Infer
+    Finetune -- adapters --> Infer
+    Embed -- synced vectors --> Local
+```
 
 ## License
 
