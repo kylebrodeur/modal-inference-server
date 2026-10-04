@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "include": ["src", "rollup.config.ts"],
+  "compilerOptions": {
+    "lib": ["dom", "dom.Iterable", "esnext"],
+    "importHelpers": true,
+    "declaration": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "moduleResolution": "Bundler",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  },
+  "exclude": ["**~old.ts"]
+}
