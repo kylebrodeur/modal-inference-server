@@ -198,6 +198,15 @@ def recall(payload, request):
 
 The tag set changes only in this package's releases.
 
+## Operator commands (`mtk`)
+
+This package ships an `mtk inference` command group in
+`server/mtk-commands.toml`: a passthrough to this repo's own CLI, so
+`mtk inference <anything...>` runs `uv run modal-inference <anything...>` in
+the checkout with argv preserved verbatim (the CLI's own commands gate
+themselves). See [modal-toolkit](https://github.com/kylebrodeur/modal-toolkit)
+for the fleet-level commands and the per-package command table.
+
 ## Part of the Modal Toolkit
 
 Seven standalone Modal utilities from the same author, each extractable and deployable on its own.
