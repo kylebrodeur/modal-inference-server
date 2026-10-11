@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import importlib
 import json
 import os
 import re
@@ -850,10 +851,46 @@ _RESOLVED: dict[str, object] | None = resolve_serve_target(DEPLOYED_PROFILE) if 
 #     mutate the dict in place (e.g. inject a system message) and the proxy
 #     re-serializes the forwarded body. Only fired when a handler is
 #     registered (zero overhead otherwise).
+#
+# In-container extension door: set MODAL_INFERENCE_HOOKS_MODULE to the
+# import name of an overlay hook module right after this hooks instance is
+# created (see _import_hooks_module at the call below). Contained on
+# failure; unset default stays inert.
 hooks = Hooks(
     ("lane.boot.pre", "lane.boot.post", "request.pre", "request.post", "inject.pre"),
     name="modal-inference-server",
 )
+
+
+def _import_hooks_module() -> bool:
+    """Import the env-named overlay hook module, contained on failure.
+
+    The serving container hydrates a /root-baked modal_service.py; overlays
+    (deploy-dir lanes) can register inject.pre/request handlers on the SAME
+    hooks instance by naming a module whose top level calls
+    `modal_service.hooks.register(...)` (or imports one that does). The
+    env knob is `MODAL_INFERENCE_HOOKS_MODULE`; the parent directory must
+    be importable (an overlay adds its own dir to the image or PYTHONPATH).
+
+    Returns True when a module was imported, False for unset/failed.
+    Contained like hooks.fire: a broken overlay module degrades that
+    lane's hook, never the server.
+    """
+    module_name = os.getenv("MODAL_INFERENCE_HOOKS_MODULE", "").strip()
+    if not module_name:
+        return False
+    try:
+        importlib.import_module(module_name)
+    except Exception as exc:
+        print(
+            f"[hooks] MODAL_INFERENCE_HOOKS_MODULE import failed (contained): "
+            f"{module_name}: {type(exc).__name__}: {str(exc)[:150]}"
+        )
+        return False
+    return True
+
+
+_import_hooks_module()
 
 # Slots llama actually granted each member at boot, measured from the load log.
 # Empty until preload runs, or when measurement was impossible (log rotated).

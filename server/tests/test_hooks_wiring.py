@@ -388,3 +388,33 @@ def test_unknown_tag_is_refused_by_both_instances() -> None:
         modal_service.hooks.register("lane.boot.pre.pre", lambda payload: None)
     with pytest.raises(ValueError, match="unknown hook tag"):
         dashboard_hooks.register("dashboard.boot.post.post", lambda payload: None)
+
+
+class TestHooksModuleDoor:
+    """MODAL_INFERENCE_HOOKS_MODULE: the env-named overlay import door.
+
+    The serving container hydrates a /root-baked modal_service.py and has
+    no import path to overlay-provided modules; this door (contained on
+    failure, same philosophy as hooks.fire) lets an overlay import a hook
+    module at module-load time, so an inject.pre handler lands on the
+    baked hooks registry in-container.
+    """
+
+    def test_door_is_a_noop_when_env_unset(self, monkeypatch) -> None:
+        monkeypatch.delenv("MODAL_INFERENCE_HOOKS_MODULE", raising=False)
+        assert modal_service._import_hooks_module() is False
+
+    def test_door_is_contained_on_missing_module(self, monkeypatch) -> None:
+        monkeypatch.setenv("MODAL_INFERENCE_HOOKS_MODULE", "definitely_not_a_real_module_xyz")
+        assert modal_service._import_hooks_module() is False
+
+    def test_door_imports_env_named_module(self, monkeypatch, tmp_path) -> None:
+        (tmp_path / "lane_hooks_test_only.py").write_text(
+            "LOADED = True\n",
+            encoding="utf-8",
+        )
+        monkeypatch.syspath_prepend(str(tmp_path))
+        monkeypatch.setenv("MODAL_INFERENCE_HOOKS_MODULE", "lane_hooks_test_only")
+
+        assert modal_service._import_hooks_module() is True
+        assert "lane_hooks_test_only" in sys.modules
