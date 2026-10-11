@@ -1,4 +1,4 @@
-# AGENTS.md — modal-inference-server
+# AGENTS.md - modal-inference-server
 
 Agent instructions for THIS repo (v1.3.0 on `main`). The family-wide
 rules live in the system workspace's AGENTS.md

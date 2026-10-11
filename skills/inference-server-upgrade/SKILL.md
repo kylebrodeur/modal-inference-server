@@ -50,5 +50,4 @@ Inference-specific cautions an overlay must respect:
   observers register here; boot-provenance observer =
   `tools/guards/boot-provenance.py` in the system workspace.
 - The metrics/usage surface is append-only (`/usage` ledger): a rogue
-  deploy sharing this lane's Volume would corrupt ledger continuity —
-  one more reason deploys are overlay-only.
+  deploy sharing this lane's Volume would corrupt ledger continuity -   one more reason deploys are overlay-only.
