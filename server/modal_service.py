@@ -542,7 +542,20 @@ _LIBS_DIR = MODULE_DIR / "libs"
 def _bake_modules(image: modal.Image, container_dir: str = "/root") -> modal.Image:
     for name in _RUNTIME_MODULES:
         image = image.add_local_file(MODULE_DIR / name, f"{container_dir}/{name}")
-    return image.add_local_dir(_LIBS_DIR, f"{container_dir}/libs")
+    image = image.add_local_dir(_LIBS_DIR, f"{container_dir}/libs")
+    # Overlay-bake surface (MODAL_INFERENCE_IMAGE_LOCAL_FILES): colon-
+    # separated absolute file paths, each baked at /root/<name>. Lets a
+    # lane put its own hook module into the SERVE image (the hooks door
+    # imports it in-container). Fail-closed: one missing file refuses the
+    # whole bake rather than half-baking.
+    extra = os.getenv("MODAL_INFERENCE_IMAGE_LOCAL_FILES", "").strip()
+    if extra:
+        for raw in extra.split(":"):
+            path = Path(raw.strip()).expanduser()
+            if not path.is_file():
+                raise FileNotFoundError(f"MODAL_INFERENCE_IMAGE_LOCAL_FILES entry is not a file: {path}")
+            image = image.add_local_file(path, f"{container_dir}/{path.name}")
+    return image
 
 
 # llama.cpp's router mode requires the engine to be built with LLAMA_SUBPROCESS

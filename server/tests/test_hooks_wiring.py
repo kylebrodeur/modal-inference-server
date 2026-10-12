@@ -17,6 +17,7 @@ import json
 import pathlib
 import sys
 
+import modal
 import pytest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
@@ -418,3 +419,90 @@ class TestHooksModuleDoor:
 
         assert modal_service._import_hooks_module() is True
         assert "lane_hooks_test_only" in sys.modules
+
+
+class TestBakeLocalFilesKnob:
+    """MODAL_INFERENCE_IMAGE_LOCAL_FILES: the overlay-bake surface.
+
+    _bake_modules() bakes only upstream's own _RUNTIME_MODULES; overlays
+    have no surface to add their own files to the SERVE image. This knob
+    (colon-separated absolute file paths) extends the bake so an overlay
+    hook module actually reaches the container that fires the hooks.
+    Assertions walk the real Modal image mount DAG (_MountFile entries),
+    not mocks.
+    """
+
+    @staticmethod
+    def _baked_file_pairs(image) -> set[tuple[str, str]]:
+        """(local_file, remote_path) pairs across the image's mount DAG."""
+
+        def unwrap(x):
+            for k, v in vars(x).items():
+                if k.startswith("_sync_original_"):
+                    return v
+            return x
+
+        pairs: list[tuple[str, str]] = []
+        seen: set[int] = set()
+
+        def walk(obj) -> None:
+            real = unwrap(obj)
+            key = id(real)
+            if key in seen:
+                return
+            seen.add(key)
+            tn = type(real).__name__
+            if tn == "_MountFile":
+                pairs.append((str(real.local_file), str(real.remote_path)))
+                return
+            if tn == "_Mount":
+                try:
+                    for entry in getattr(real, "_entries", None) or []:
+                        if type(entry).__name__ == "_MountFile":
+                            pairs.append((str(entry.local_file), str(entry.remote_path)))
+                except Exception:
+                    pass
+                return
+            deps = getattr(real, "_deps", None)
+            try:
+                for dep in deps():
+                    walk(dep)
+            except Exception:
+                pass
+
+        walk(image)
+        return set(pairs)
+
+    def test_knob_bakes_env_named_files_into_the_image_layer(self, monkeypatch, tmp_path) -> None:
+        lane = tmp_path / "laneA"
+        lane.mkdir()
+        (lane / "shadow_hook.py").write_text("LOADED = 'a'\n", encoding="utf-8")
+        (lane / "shadow_seam.py").write_text("import shadow_hook\n", encoding="utf-8")
+
+        monkeypatch.setenv("MODAL_INFERENCE_IMAGE_LOCAL_FILES", f"{lane}/shadow_hook.py:{lane}/shadow_seam.py")
+        image = modal_service._bake_modules(modal.Image.debian_slim())
+        pairs = self._baked_file_pairs(image)
+        targets = {remote for _local, remote in pairs}
+
+        # The lane files ARE baked (alongside upstream modules).
+        assert any(remote == "/root/shadow_hook.py" for remote in targets)
+        assert any(remote == "/root/shadow_seam.py" for remote in targets)
+        # Upstream modules still baked (no regression).
+        assert "/root/modal_inference_catalog.py" in targets
+
+    def test_knob_unset_changes_nothing(self, monkeypatch) -> None:
+        monkeypatch.delenv("MODAL_INFERENCE_IMAGE_LOCAL_FILES", raising=False)
+        pairs = self._baked_file_pairs(modal_service._bake_modules(modal.Image.debian_slim()))
+        targets = {remote for _l, remote in pairs}
+        assert "/root/modal_inference_catalog.py" in targets
+        assert not any("shadow_hook" in t for t in targets)
+
+    def test_knob_fails_closed_on_missing_file(self, monkeypatch, tmp_path) -> None:
+        real = tmp_path / "real_module.py"
+        real.write_text("X = 1\n", encoding="utf-8")
+        ghost = tmp_path / "ghost.py"  # deliberately NOT created
+
+        monkeypatch.setenv("MODAL_INFERENCE_IMAGE_LOCAL_FILES", f"{real}:{ghost}")
+        # Fail-closed on the missing file: refuse rather than half-bake.
+        with pytest.raises(FileNotFoundError, match=r"ghost\.py"):
+            modal_service._bake_modules(modal.Image.debian_slim())
