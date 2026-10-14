@@ -9,6 +9,12 @@ High-performance, GPU-accelerated LLM inference infrastructure deployed on Modal
 
 > **Operations:** for cold starts, cost control, hot-set semantics, slot gating, GGUF arch gotchas, and troubleshooting, read [docs/RUNBOOK.md](docs/RUNBOOK.md).
 
+## Docs
+
+- [Quickstart](docs/quickstart.md): from a new project to a deployed OpenAI-compatible LLM inference, using the `mtk` toolkit.
+- [How-to](docs/how-to.md): day-to-day operation of this server.
+- [Modal Toolkit](https://github.com/kylebrodeur/modal-toolkit): the operator CLI (`mtk`) that deploys it.
+
 ## Architecture Pillars
 
 ### 1. Routing
