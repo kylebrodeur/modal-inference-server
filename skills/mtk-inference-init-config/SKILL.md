@@ -35,7 +35,7 @@ pins them (env knobs). `deploy.sh` is the deploy entry point through
   generated), and `modal-inference-server-huggingface` (`HF_TOKEN`, supplied by
   you for gated downloads). `mtk deploy` asks before creating any missing one.
 - Staging weights is seed work, not deploy work: write the overlay's
-  `seed.json`, then `mtk seed inference` (loads from the load-skill's recipes).
+  `seed.json`, then `mtk seed inference` before the first deploy.
 
 ## Verify
 
