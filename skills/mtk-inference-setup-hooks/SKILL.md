@@ -19,9 +19,10 @@ importable via the image or PYTHONPATH), never in `vendor/`:
 ```python
 from server.modal_service import hooks
 
-@hooks.observe("lane.boot.post")
 def observe(report):
     print(report)
+
+hooks.register("lane.boot.post", observe)
 ```
 
 The closed tag set: `lane.boot.pre`, `lane.boot.post`, `request.pre`,
