@@ -1,6 +1,6 @@
 ---
 name: mtk-inference-init-config
-description: Use when a project adds the inference package - mtk init, the overlay pair (deploy.json, deploy.sh), and the three-decrets secrets setup.
+description: Use when a project adds the inference package - mtk init, the overlay pair (deploy.json, deploy.sh), and the three-secret setup.
 ---
 
 # Inference: init and config for a project
@@ -21,7 +21,11 @@ writes its provenance. The copy is read-only; drift refuses a deploy.
 `deploys/inference-server/deploy.json` names the app `<project>-inference`:
 
 ```json
-{ "pkg": "inference", "app_name": "infer-lab-inference" }
+{
+  "pkg": "inference",
+  "app_name": "infer-lab-inference",
+  "upstream": { "repo": "modal-inference-server", "tag": "v1.6.0" }
+}
 ```
 
 Model aliases and runtime choices live in the repo's own registry; the overlay

@@ -17,7 +17,7 @@ In the overlay (a module your overlay dir owns; the parent dir must be
 importable via the image or PYTHONPATH), never in `vendor/`:
 
 ```python
-from server.modal_service import hooks
+from modal_service import hooks
 
 def observe(report):
     print(report)
