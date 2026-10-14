@@ -1,8 +1,6 @@
 ---
 name: inference-server-upgrade
-description: Upgrade + deploy-boundary discipline for the modal-inference-server checkout: tag-based upgrades, overlay-only deploys, hot-set awareness.
-
-Use when upgrading/redeploying this repo, touching inference lanes, or before modal commands inside this checkout.
+description: Upgrade + deploy-boundary discipline for the modal-inference-server checkout: tag-based upgrades, overlay-only deploys, hot-set awareness. Use when upgrading/redeploying this repo, touching inference lanes, or before modal commands inside this checkout.
 license: Apache-2.0
 metadata:
   author: kylebrodeur
@@ -51,3 +49,19 @@ Inference-specific cautions an overlay must respect:
   `tools/guards/boot-provenance.py` in the system workspace.
 - The metrics/usage surface is append-only (`/usage` ledger): a rogue
   deploy sharing this lane's Volume would corrupt ledger continuity -   one more reason deploys are overlay-only.
+
+## Operating with mtk
+
+Source of truth: the [quickstart](../../docs/quickstart.md) and
+[how-to](../../docs/how-to.md) in this repo, and the toolkit's `mtk` skill.
+
+```bash
+mtk init <project-id>      # from the project directory; checks prerequisites and the account
+mtk pull inference             # clone this repo into the repos root
+mtk deploy inference           # preflight the overlay, confirm secrets, run deploys/inference/deploy.sh
+mtk doctor --pkg inference     # health and drift
+```
+
+- Overlay: `deploys/inference/deploy.json` must name the app `<project>-inference`.
+- Secrets this package declares: inference-auth-secret, modal-inference-server-dashboard (generated), modal-inference-server-huggingface (you supply). `mtk deploy` asks before creating any.
+- Never run `modal deploy` inside this checkout.
