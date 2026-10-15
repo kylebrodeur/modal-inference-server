@@ -772,6 +772,36 @@ def _import_hf_gguf(alias: str, repo: str, quant: str, model_dir: str, env: dict
     shutil.rmtree(staging)
 
 
+def _pin_verdict(pinned: str, digest: str) -> str:
+    """The G2 pin contract: only a digest-shaped pin is checkable.
+
+    A pin that is absent, empty, or not a 64-hex manifest digest is
+    "unknown" (the runner discovers the digest by importing once, then
+    pins it); a digest-shaped pin is checked ("verified" / "refuse").
+    Digests arrive from ollama's /api/tags with a prefix (``sha-`` or
+    ``sha256:``), normalized before any comparison.
+    """
+    normalized = digest.removeprefix("sha256:").removeprefix("sha-")
+    if pinned and _DIGEST_RE.fullmatch(pinned):
+        return "verified" if normalized == pinned else "refuse"
+    return "unknown"
+
+
+def _pin_message(alias: str, tag: str, verdict: str, digest: str, pinned: str) -> str:
+    """The loud bootstrap line: either the refusal or the pin-it instruction.
+
+    For "unknown", the line carries the digest AND the exact catalog
+    replace-line so the next step is a copy-paste, never a guess.
+    """
+    normalized = digest.removeprefix("sha256:").removeprefix("sha-")
+    if verdict == "refuse":
+        return f"imported {tag}@{normalized} but profile {alias!r} pins {pinned}"
+    return (
+        f"pin: {tag}@{normalized} (pin unknown: the profile's revision was not a manifest digest). "
+        f'Catalog line: "revision": "{normalized}"'
+    )
+
+
 def _bootstrap_ollama(alias: str, tag: str, pinned: str, marker: Path, model_dir: str) -> None:
     """Populate the shared Volume store under the alias and record the manifest digest.
 
@@ -791,10 +821,13 @@ def _bootstrap_ollama(alias: str, tag: str, pinned: str, marker: Path, model_dir
             if tag != alias:
                 subprocess.run(["ollama", "cp", tag, alias], env=env, check=True, text=True)
         digest = _ollama_digest(alias)
-        if pinned and digest != pinned:
-            raise RuntimeError(f"imported {tag}@{digest} but profile {alias!r} pins {pinned}")
+        verdict = _pin_verdict(pinned, digest)
+        if verdict == "refuse":
+            raise RuntimeError(_pin_message(alias, tag, verdict, digest, pinned))
         marker.parent.mkdir(parents=True, exist_ok=True)
         marker.write_text(f"{tag}@{digest}\n")
+        if verdict == "unknown":
+            print(f"pin: {_pin_message(alias, tag, verdict, digest, pinned)}")
     finally:
         os.killpg(server.pid, signal.SIGTERM)
         server.wait(timeout=30)

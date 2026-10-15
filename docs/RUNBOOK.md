@@ -104,9 +104,13 @@ modal run server/modal_service.py::bootstrap_model --alias <alias>
 modal deploy server/modal_service.py
 ```
 
-Ollama profiles pin by **manifest digest** (64 hex). Leave `--revision` off for
-the first bootstrap; it records the digest in the Volume marker, then pin with
-Edit `server/models.json` (the catalog) and re-deploy.
+Ollama profiles pin by **manifest digest** (64 hex). Leave `--revision` off
+for the first bootstrap: with no digest-shaped pin, an `hf.co/` import
+completes anyway and the runner prints `pin: <tag>@<digest>` plus the exact
+`"revision": "<digest>"` line to paste into `server/models.json` (the
+catalog); re-deploy after pinning. A pin that IS a 64-hex digest and
+mismatches still refuses (after the download; staging is kept) - wrong
+pins fail closed; only the unknowable case is self-completing.
 
 ### The GGUF arch-string trap
 

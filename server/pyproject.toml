@@ -1,6 +1,6 @@
 [project]
 name = "modal-inference-server"
-version = "1.6.2"
+version = "1.6.3"
 description = "Generic OpenAI-compatible GPU inference service on Modal"
 
 requires-python = ">=3.11,<3.13"
