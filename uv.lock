@@ -534,7 +534,7 @@ wheels = [
 
 [[package]]
 name = "modal-inference-server"
-version = "1.4.0"
+version = "1.6.2"
 source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
