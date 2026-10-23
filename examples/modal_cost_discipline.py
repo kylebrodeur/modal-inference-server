@@ -102,7 +102,7 @@ class LLMService:
 # time the user spends typing.)
 
 
-@app.function(image=image, volumes={MODEL_DIR: model_volume})
+@app.function(image=image, volumes={MODEL_DIR: model_volume}, timeout=600)
 def warm_probe() -> str:
     import time
 
